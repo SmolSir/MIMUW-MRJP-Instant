@@ -6,5 +6,5 @@
 Test*
 
 # Other files
-compiler
-copy.sh
+insc_llvm
+insc_jvm

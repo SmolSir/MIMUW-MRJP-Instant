@@ -1,7 +1,8 @@
-module Compiler (compile) where
+module CompilerLLVM (compile) where
 
 import Instant.Abs
 
+
 compile :: Program -> IO ()
 compile program = do
-    putStrLn "works!"
+    putStrLn "LLVM works!"
