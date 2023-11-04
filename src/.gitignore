@@ -1,0 +1,10 @@
+# BNFC files
+*.hi
+*.o
+*.x
+*.y
+Test*
+
+# Other files
+compiler
+copy.sh
