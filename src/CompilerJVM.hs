@@ -2,7 +2,7 @@ module CompilerJVM (compile) where
 
 import qualified Data.Map as Map
 
-import System.IO (stderr, hPutStrLn, hPrint)
+import System.IO (stderr, hPutStrLn)
 import System.Exit (exitFailure, exitSuccess)
 
 import Control.Monad.State
@@ -89,7 +89,7 @@ evaluate (ExpVar position identifier) = do
 executeProgram :: Program -> StmtState
 executeProgram (Prog _ statementList) = mapM_ execute statementList
 
-compile :: Program -> IO ()
+compile :: Program -> IO String
 compile program = do
     result <- runExceptT . flip evalStateT Map.empty . executeProgram $ program
     case result of
