@@ -26,7 +26,7 @@ data CompilerState = CompilerState {
     stackSizeMaximal    :: Int
 }
 
-type CompilerStatus = ExceptT Error IO
+type CompilerStatus = Except Error
 
 type CompilerStateT = StateT CompilerState CompilerStatus
 
@@ -213,7 +213,7 @@ compile :: Program -> String -> IO String
 compile program classNameString = do
     let initialVariableIdentifiers = Map.singleton "_args" 0
     let initialCompilerState = CompilerState initialVariableIdentifiers id 0 0
-    result <- runExceptT . flip execStateT initialCompilerState . executeProgram $ program
+    let result = runExcept . flip execStateT initialCompilerState . executeProgram $ program
     case result of
         Right (CompilerState variableIdentifiers accumulator _ stackSizeMaximal) -> do
             return (showString (header classNameString (Map.size variableIdentifiers) stackSizeMaximal) . accumulator . showString footer $ "\n")

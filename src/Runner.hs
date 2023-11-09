@@ -18,5 +18,4 @@ mainRunner :: RunFileFunction -> IO ()
 mainRunner fileRunner = do
     args <- getArgs
     case args of
-        -- []   -> getContents >>= runner pProgram
         file -> mapM_ (fileRunner pProgram) file

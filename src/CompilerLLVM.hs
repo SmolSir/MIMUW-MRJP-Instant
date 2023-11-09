@@ -24,7 +24,7 @@ data CompilerState = CompilerState {
     resultAccumulator   :: ShowS
 }
 
-type CompilerStatus = ExceptT Error IO
+type CompilerStatus = Except Error
 
 type CompilerStateT = StateT CompilerState CompilerStatus
 
@@ -36,6 +36,16 @@ type StmtState = CompilerStateT ()
 ---------------------
 header :: String
 header = "\
+    \@dnl = internal constant [4 x i8] c\"%d\\0A\\00\"\n\
+    \\n\
+    \declare i32 @printf(i8*, ...)\n\
+    \\n\
+    \define void @printInt(i32 %x) {\n\
+    \    %t0 = getelementptr [4 x i8], [4 x i8]* @dnl, i32 0, i32 0\n\
+    \    call i32 (i8*, ...) @printf(i8* %t0, i32 %x)\n\
+    \    ret void\n\
+    \}\n\
+    \\n\
     \define i32 @main() {\n\
     \entry:\n\
     \"
@@ -133,7 +143,9 @@ executeProgram (Prog _ statementList) = mapM_ execute statementList
 
 compile :: Program -> IO String
 compile program = do
-    result <- runExceptT . flip execStateT (CompilerState 0 Set.empty id) . executeProgram $ program
+    let initialVariableIdentifiers = Set.empty
+    let initialCompilerState = CompilerState 0 initialVariableIdentifiers id
+    let result = runExcept . flip execStateT initialCompilerState . executeProgram $ program
     case result of
         Right (CompilerState _ _ accumulator) -> do
             return (showString header . accumulator . showString footer $ "\n")
