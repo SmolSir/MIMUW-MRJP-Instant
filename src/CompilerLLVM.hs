@@ -62,7 +62,8 @@ accumulate addition =
     modify (\state -> state {
         resultAccumulator = resultAccumulator state . showString(
             "    " ++ addition ++ "\n"
-        )})
+        )
+    })
 
 -----------------------
 -- execute functions --

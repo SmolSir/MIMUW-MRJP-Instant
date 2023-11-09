@@ -1,6 +1,6 @@
 module Main where
 
-import System.IO (stderr, hPutStrLn, hPrint)
+import System.IO (stderr, hPutStrLn)
 import System.Exit (exitFailure, exitSuccess, ExitCode(..))
 import System.FilePath (replaceExtension)
 import System.Process
@@ -30,12 +30,12 @@ runFile parser file = do
     let llvmBitcodeFile = replaceExtension file "bc"
     llvmString <- run parser instantString
     writeFile llvmFile llvmString
-    (exitcode, outputMessage, errorMessage) <- readProcessWithExitCode ("llvm-as") ["-o", llvmBitcodeFile, llvmFile] ""
-    case exitcode of
+    (exitCode, outputMessage, errorMessage) <- readProcessWithExitCode ("llvm-as") ["-o", llvmBitcodeFile, llvmFile] ""
+    case exitCode of
         ExitSuccess ->
             exitSuccess
-        ExitFailure exitCode -> do
-            hPutStrLn stderr ("Error (program exited with code: " ++ show exitcode ++ ")")
+        ExitFailure _ -> do
+            hPutStrLn stderr ("Error (program exited with code: " ++ show exitCode ++ ")")
             hPutStrLn stderr outputMessage
             hPutStrLn stderr errorMessage
             exitFailure
