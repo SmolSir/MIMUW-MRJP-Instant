@@ -20,7 +20,6 @@ data Error = Error Position String
     deriving (Show)
 
 data CompilerState = CompilerState {
-    localsCounter       :: Int,
     variableIdentifiers :: Map.Map String Int,
     resultAccumulator   :: ShowS,
     stackSizeCurrent    :: Int,
@@ -140,9 +139,8 @@ execute (SAss _ (Ident identifier) expression) = do
     nextLocal <- maybe
         (
             do
-                nextLoc <- gets localsCounter
+                nextLoc <- gets (Map.size . variableIdentifiers)
                 modify (\state -> state {
-                    localsCounter = nextLoc + 1,
                     variableIdentifiers = Map.insert identifier nextLoc (variableIdentifiers state)
                 })
                 return nextLoc
@@ -211,10 +209,12 @@ executeProgram (Prog _ statementList) = mapM_ execute statementList
 
 compile :: Program -> String -> IO String
 compile program classNameString = do
-    result <- runExceptT . flip execStateT (CompilerState 1 Map.empty id 0 0) . executeProgram $ program
+    let initialVariableIdentifiers = Map.singleton "_args" 0
+    let initialCompilerState = CompilerState initialVariableIdentifiers id 0 0
+    result <- runExceptT . flip execStateT initialCompilerState . executeProgram $ program
     case result of
-        Right (CompilerState localsCounter _ accumulator _ stackSizeMaximal) -> do
-            return (showString (header classNameString localsCounter stackSizeMaximal) . accumulator . showString footer $ "\n")
+        Right (CompilerState variableIdentifiers accumulator _ stackSizeMaximal) -> do
+            return (showString (header classNameString (Map.size variableIdentifiers) stackSizeMaximal) . accumulator . showString footer $ "\n")
         Left (Error position errorMessage) -> do
             let positionMessage = case position of
                     Just pos -> printPosition pos

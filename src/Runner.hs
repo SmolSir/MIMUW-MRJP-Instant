@@ -6,7 +6,6 @@ import System.Exit (exitFailure)
 import Instant.Abs
 import Instant.Lex
 import Instant.Par
-import Instant.Print
 import Instant.ErrM
 
 type ParseFunction a = [Token] -> Err a
