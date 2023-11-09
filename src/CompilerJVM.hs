@@ -172,7 +172,19 @@ evaluate (ExpLit _ value) = do
         val                                 -> accumulate ("ldc " ++ show val)
 
 
-evaluate (ExpVar (position, _) (Ident identifier)) = undefined
+evaluate (ExpVar (position, _) (Ident identifier)) = do
+    maybeValue <- gets (\state -> Map.lookup identifier (variableIdentifiers state))
+    case maybeValue of
+        Just value -> do
+            let separator = if value <= 3 then "_" else " "
+            accumulate ("iload" ++ separator ++ show value)
+            increaseStackSizeCurrent
+        Nothing -> do
+            throwError error
+    where
+        error = Error position errorMessage
+        errorMessage = "undefined variable: '" ++ identifier ++ "'"
+
 
 evaluate (ExpAdd _ expressionL expressionR) = evaluateOperator "iadd" expressionL expressionR
 

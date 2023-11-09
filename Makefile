@@ -1,4 +1,5 @@
 all:
+	$(MAKE) clean
 	$(MAKE) -C src all
 	cp src/insc_llvm src/insc_jvm .
 
@@ -34,4 +35,4 @@ test_all:
 	\
 	cp -r $$zip_target.tar.gz test/; \
 	\
-	python3 test/main.py; \
+	python3 test/main.py -v help; \
