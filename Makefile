@@ -4,7 +4,7 @@ all:
 
 clean:
 	rm -f insc_llvm insc_jvm
-	rm -f *.tgz
+	rm -f *.tar.gz
 	$(MAKE) -C src clean
 
 zip:
@@ -13,7 +13,7 @@ zip:
 	zip_source="solution"; \
 	zip_target="bs429594-Instant"; \
 	\
-	rm -rf $$zip_target.tgz; \
+	rm -rf $$zip_target.tar.gz; \
 	rm -rf $$zip_source; \
 	\
 	mkdir $$zip_source; \
@@ -23,4 +23,15 @@ zip:
 	cp -r lib $$zip_source/; \
 	cp -r src $$zip_source/; \
 	\
-	tar -czvf $$zip_target.tgz -C $$zip_source .; \
+	tar -czvf $$zip_target.tar.gz -C $$zip_source .; \
+
+test_all:
+	$(MAKE) zip; \
+	\
+	zip_target="bs429594-Instant"; \
+	\
+	rm -rf test/$$zip_target.tar.gz; \
+	\
+	cp -r $$zip_target.tar.gz test/; \
+	\
+	python3 test/main.py; \
