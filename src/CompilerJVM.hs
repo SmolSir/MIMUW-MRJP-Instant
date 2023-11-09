@@ -165,9 +165,11 @@ evaluate :: ExpTreeHeight -> ExpState
 evaluate (ExpLit _ value) = do
     increaseStackSizeCurrent
     case value of
-        -1                         -> accumulate "iconst_m1"
-        val | 0 <= val && val <= 5 -> accumulate ("iconst_" ++ show val)
-        val                        -> accumulate ("ldc " ++ show val)
+        val |     -1 == val                 -> accumulate "iconst_m1"
+        val |      0 <= val && val <= 5     -> accumulate ("iconst_" ++ show val)
+        val |   -128 <= val && val <= 127   -> accumulate ("bipush " ++ show val)
+        val | -32768 <= val && val <= 32767 -> accumulate ("sipush " ++ show val)
+        val                                 -> accumulate ("ldc " ++ show val)
 
 
 evaluate (ExpVar (position, _) (Ident identifier)) = undefined
