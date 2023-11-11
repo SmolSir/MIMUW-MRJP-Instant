@@ -85,7 +85,7 @@ execute (SAss _ (Ident identifier) expression) = do
     variableDefined <- gets (\state -> Set.member identifier (variableIdentifiers state))
     value <- evaluate expression
     if variableDefined
-        then
+        then do
             accumulate ("store i32 " ++ value ++ ", i32* %" ++ identifier)
         else do
             modify (\state -> state {

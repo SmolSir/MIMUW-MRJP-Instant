@@ -168,7 +168,30 @@ execute (SExp _ expression) = do
 ------------------------
 -- evaluate functions --
 ------------------------
+evaluateOperator :: String -> ExpTreeHeight -> ExpTreeHeight -> ExpState
+evaluateOperator operator expressionL expressionR = do
+    let heightL = treeHeight expressionL
+    let heightR = treeHeight expressionR
+    if heightL < heightR
+        then do
+            evaluate expressionR
+            evaluate expressionL
+            when (operator == "isub" || operator == "idiv") (accumulate "swap")
+        else do
+            evaluate expressionL
+            evaluate expressionR
+    accumulate operator
+    decreaseStackSizeCurrent
+
 evaluate :: ExpTreeHeight -> ExpState
+evaluate (ExpAdd _ expressionL expressionR) = evaluateOperator "iadd" expressionL expressionR
+
+evaluate (ExpSub _ expressionL expressionR) = evaluateOperator "isub" expressionL expressionR
+
+evaluate (ExpMul _ expressionL expressionR) = evaluateOperator "imul" expressionL expressionR
+
+evaluate (ExpDiv _ expressionL expressionR) = evaluateOperator "idiv" expressionL expressionR
+
 evaluate (ExpLit _ value) = do
     increaseStackSizeCurrent
     case value of
@@ -190,32 +213,6 @@ evaluate (ExpVar (position, _) (Ident identifier)) = do
     where
         error = Error position errorMessage
         errorMessage = "undefined variable: '" ++ identifier ++ "'"
-
-
-evaluate (ExpAdd _ expressionL expressionR) = evaluateOperator "iadd" expressionL expressionR
-
-evaluate (ExpSub _ expressionL expressionR) = evaluateOperator "isub" expressionL expressionR
-
-evaluate (ExpMul _ expressionL expressionR) = evaluateOperator "imul" expressionL expressionR
-
-evaluate (ExpDiv _ expressionL expressionR) = evaluateOperator "idiv" expressionL expressionR
-
-evaluateOperator :: String -> ExpTreeHeight -> ExpTreeHeight -> ExpState
-evaluateOperator operator expressionL expressionR = do
-    let heightL = treeHeight expressionL
-    let heightR = treeHeight expressionR
-    if heightL < heightR
-        then do
-            evaluate expressionR
-            evaluate expressionL
-            when (operator == "isub" || operator == "idiv") (accumulate "swap")
-        else do
-            evaluate expressionL
-            evaluate expressionR
-    accumulate operator
-    decreaseStackSizeCurrent
-
-
 
 -----------------------
 -- runtime functions --
