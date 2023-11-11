@@ -102,9 +102,9 @@ treeHeight (ExpVar (_, height) _) = height
 
 maxTreeHeight :: Int -> Int -> Int
 maxTreeHeight treeHeightA treeHeightB =
-    if treeHeightA > treeHeightB
-        then max treeHeightA (treeHeightB + 1)
-        else max treeHeightB (treeHeightA + 1)
+    if treeHeightA < treeHeightB
+        then max treeHeightB (treeHeightA + 1)
+        else max treeHeightA (treeHeightB + 1)
 
 setMaxTreeHeight :: Exp -> ExpTreeHeight
 setMaxTreeHeight (ExpAdd location expressionL expressionR) =
@@ -208,11 +208,7 @@ evaluateOperator operator expressionL expressionR = do
         then do
             evaluate expressionR
             evaluate expressionL
-            if (operator == "isub" || operator == "idiv")
-                then do
-                    accumulate "swap"
-                else do
-                    return ()
+            when (operator == "isub" || operator == "idiv") (accumulate "swap")
         else do
             evaluate expressionL
             evaluate expressionR
