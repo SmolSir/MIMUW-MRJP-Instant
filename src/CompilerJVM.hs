@@ -55,7 +55,7 @@ header classNameString limitLocals limitStack = "\
 footer :: String
 footer = "\
     \    return\n\
-    \.end method\
+    \.end method\n\
     \"
 
 ----------------------

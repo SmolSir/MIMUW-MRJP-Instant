@@ -52,7 +52,8 @@ header = "\
 
 footer :: String
 footer = "\
-    \    ret i32 0\n}\
+    \    ret i32 0\n\
+    \}\n\
     \"
 
 ----------------------
