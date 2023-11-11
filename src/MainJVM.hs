@@ -12,25 +12,29 @@ import Runner
 
 
 run :: String -> RunFunction
-run classNameString parser inputString =
-    let instantString = instantLexer inputString in
-    case parser instantString of
-        Bad inputString -> do
+run className parser input =
+    let tokenList = instantLexer input in
+    case parser tokenList of
+        Bad _ -> do
             hPutStrLn stderr "Failed to parse input:"
-            hPutStrLn stderr inputString
+            hPutStrLn stderr input
             exitFailure
         Ok programTree -> do
-            compile programTree classNameString
+            compile programTree className
 
 runFile :: RunFileFunction
 runFile parser file = do
-    instantString <- readFile file
-    let classNameString = takeBaseName file
+    instantCode <- readFile file
+    let className = takeBaseName file
     let jasminFile = replaceExtension file "j"
     let targetDirectory = takeDirectory file
-    jasminString <- run classNameString parser instantString
-    writeFile jasminFile jasminString
-    (exitCode, outputMessage, errorMessage) <- readProcessWithExitCode ("java") ["-jar", "./lib/jasmin.jar", "-d", targetDirectory, jasminFile] ""
+    jasminCode <- run className parser instantCode
+    writeFile jasminFile jasminCode
+    (exitCode, outputMessage, errorMessage) <-
+        readProcessWithExitCode
+            ("java")
+            ["-jar", "./lib/jasmin.jar", "-d", targetDirectory, jasminFile]
+            ""
     case exitCode of
         ExitSuccess ->
             exitSuccess

@@ -12,24 +12,28 @@ import Runner
 
 
 run :: RunFunction
-run parser inputString =
-    let instantString = instantLexer inputString in
-    case parser instantString of
-        Bad inputString -> do
+run parser input =
+    let tokenList = instantLexer input in
+    case parser tokenList of
+        Bad _ -> do
             hPutStrLn stderr "Failed to parse input:"
-            hPutStrLn stderr inputString
+            hPutStrLn stderr input
             exitFailure
         Ok programTree -> do
             compile programTree
 
 runFile :: RunFileFunction
 runFile parser file = do
-    instantString <- readFile file
+    instantCode <- readFile file
     let llvmFile = replaceExtension file "ll"
     let llvmBitcodeFile = replaceExtension file "bc"
-    llvmString <- run parser instantString
-    writeFile llvmFile llvmString
-    (exitCode, outputMessage, errorMessage) <- readProcessWithExitCode ("llvm-as") ["-o", llvmBitcodeFile, llvmFile] ""
+    llvmCode <- run parser instantCode
+    writeFile llvmFile llvmCode
+    (exitCode, outputMessage, errorMessage) <-
+        readProcessWithExitCode
+            ("llvm-as")
+            ["-o", llvmBitcodeFile, llvmFile]
+            ""
     case exitCode of
         ExitSuccess ->
             exitSuccess
