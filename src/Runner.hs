@@ -1,12 +1,11 @@
-module Runner (mainRunner, Err(..), RunFunction, RunFileFunction, instantLexer) where
+module Runner (mainRunner, RunFunction, RunFileFunction, instantLexer) where
 
 import System.Environment (getArgs)
-import System.Exit (exitFailure)
 
 import Instant.Abs
+import Instant.ErrM
 import Instant.Lex
 import Instant.Par
-import Instant.ErrM
 
 type ParseFunction a = [Token] -> Err a
 type RunFunction = ParseFunction (Program) -> String -> IO String
