@@ -21,7 +21,6 @@ run parser inputString =
             exitFailure
         Ok programTree -> do
             compile programTree
-            exitSuccess
 
 runFile :: RunFileFunction
 runFile parser file = do
