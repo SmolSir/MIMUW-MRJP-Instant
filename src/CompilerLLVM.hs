@@ -59,8 +59,9 @@ footer = "\
 ----------------------
 -- helper functions --
 ----------------------
-printPosition :: (Int, Int) -> String
-printPosition (line, column) = (show line) ++ ":" ++ (show column)
+printPosition :: Position -> String
+printPosition Nothing = "[position unknown]"
+printPosition (Just (line, column)) = "Ln " ++ show line ++ ", Col " ++ show column ++ "] "
 
 nextRegister :: CompilerStateT String
 nextRegister  = do
@@ -151,9 +152,7 @@ compile program = do
         Right (CompilerState _ _ accumulator) -> do
             return (showString header . accumulator . showString footer $ "\n")
         Left (Error position errorMessage) -> do
-            let positionMessage = case position of
-                    Just pos -> printPosition pos
-                    Nothing  -> "unknown position"
+            let positionMessage = printPosition position
             hPutStrLn stderr "Error:"
             hPutStrLn stderr (positionMessage ++ ": " ++ errorMessage)
             exitFailure

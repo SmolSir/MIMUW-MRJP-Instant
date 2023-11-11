@@ -37,8 +37,8 @@ type StmtState = CompilerStateT ()
 -- header & footer --
 ---------------------
 header :: String -> Int -> Int -> String
-header classNameString limitLocals limitStack = "\
-    \.class public " ++ classNameString ++ "\n\
+header className limitLocals limitStack = "\
+    \.class public " ++ className ++ "\n\
     \.super java/lang/Object\n\
     \\n\
     \.method public <init>()V\n\
@@ -61,8 +61,9 @@ footer = "\
 ----------------------
 -- helper functions --
 ----------------------
-printPosition :: (Int, Int) -> String
-printPosition (line, column) = (show line) ++ ":" ++ (show column)
+printPosition :: Position -> String
+printPosition Nothing = "[position unknown]"
+printPosition (Just (line, column)) = "Ln " ++ show line ++ ", Col " ++ show column ++ "] "
 
 decreaseStackSizeCurrent :: CompilerStateT ()
 decreaseStackSizeCurrent = do
@@ -177,7 +178,6 @@ evaluate (ExpLit _ value) = do
         val | -32768 <= val && val <= 32767 -> accumulate ("sipush " ++ show val)
         val                                 -> accumulate ("ldc " ++ show val)
 
-
 evaluate (ExpVar (position, _) (Ident identifier)) = do
     maybeValue <- gets (\state -> Map.lookup identifier (variableIdentifiers state))
     case maybeValue of
@@ -239,9 +239,7 @@ compile program className = do
                     accumulator .
                     showString footer $ "\n")
         Left (Error position errorMessage) -> do
-            let positionMessage = case position of
-                    Just pos -> printPosition pos
-                    Nothing  -> "unknown position"
+            let positionMessage = printPosition position
             hPutStrLn stderr "Error:"
             hPutStrLn stderr (positionMessage ++ ": " ++ errorMessage)
             exitFailure
