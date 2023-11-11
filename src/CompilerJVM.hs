@@ -100,34 +100,40 @@ treeHeight (ExpDiv (_, height) _ _) = height
 treeHeight (ExpLit (_, height) _) = height
 treeHeight (ExpVar (_, height) _) = height
 
-maxTreeHeight :: Exp -> ExpTreeHeight
-maxTreeHeight (ExpAdd location expressionL expressionR) =
-    let expL = maxTreeHeight expressionL in
-    let expR = maxTreeHeight expressionR in
-    let maxHeight = max (treeHeight expL) (treeHeight expR) + 1 in
+maxTreeHeight :: Int -> Int -> Int
+maxTreeHeight treeHeightA treeHeightB =
+    if treeHeightA > treeHeightB
+        then max treeHeightA (treeHeightB + 1)
+        else max treeHeightB (treeHeightA + 1)
+
+setMaxTreeHeight :: Exp -> ExpTreeHeight
+setMaxTreeHeight (ExpAdd location expressionL expressionR) =
+    let expL = setMaxTreeHeight expressionL in
+    let expR = setMaxTreeHeight expressionR in
+    let maxHeight = maxTreeHeight (treeHeight expL) (treeHeight expR) in
     ExpAdd (location, maxHeight) expL expR
 
-maxTreeHeight (ExpSub location expressionL expressionR) =
-    let expL = maxTreeHeight expressionL in
-    let expR = maxTreeHeight expressionR in
-    let maxHeight = max (treeHeight expL) (treeHeight expR) + 1 in
+setMaxTreeHeight (ExpSub location expressionL expressionR) =
+    let expL = setMaxTreeHeight expressionL in
+    let expR = setMaxTreeHeight expressionR in
+    let maxHeight = maxTreeHeight (treeHeight expL) (treeHeight expR) in
     ExpSub (location, maxHeight) expL expR
 
-maxTreeHeight (ExpMul location expressionL expressionR) =
-    let expL = maxTreeHeight expressionL in
-    let expR = maxTreeHeight expressionR in
-    let maxHeight = max (treeHeight expL) (treeHeight expR) + 1 in
+setMaxTreeHeight (ExpMul location expressionL expressionR) =
+    let expL = setMaxTreeHeight expressionL in
+    let expR = setMaxTreeHeight expressionR in
+    let maxHeight = maxTreeHeight (treeHeight expL) (treeHeight expR) in
     ExpMul (location, maxHeight) expL expR
 
-maxTreeHeight (ExpDiv location expressionL expressionR) =
-    let expL = maxTreeHeight expressionL in
-    let expR = maxTreeHeight expressionR in
-    let maxHeight = max (treeHeight expL) (treeHeight expR) + 1 in
+setMaxTreeHeight (ExpDiv location expressionL expressionR) =
+    let expL = setMaxTreeHeight expressionL in
+    let expR = setMaxTreeHeight expressionR in
+    let maxHeight = maxTreeHeight (treeHeight expL) (treeHeight expR) in
     ExpDiv (location, maxHeight) expL expR
 
-maxTreeHeight (ExpLit location value) = ExpLit (location, 1) value
+setMaxTreeHeight (ExpLit location value) = ExpLit (location, 1) value
 
-maxTreeHeight (ExpVar location identifier) = ExpVar (location, 1) identifier
+setMaxTreeHeight (ExpVar location identifier) = ExpVar (location, 1) identifier
 
 -----------------------
 -- execute functions --
@@ -135,7 +141,7 @@ maxTreeHeight (ExpVar location identifier) = ExpVar (location, 1) identifier
 execute :: Stmt -> StmtState
 execute (SAss _ (Ident identifier) expression) = do
     maybeValue <- gets (\state -> Map.lookup identifier (variableIdentifiers state))
-    evaluate (maxTreeHeight expression)
+    evaluate (setMaxTreeHeight expression)
     nextLocal <- maybe
         (
             do
@@ -153,7 +159,7 @@ execute (SAss _ (Ident identifier) expression) = do
 execute (SExp _ expression) = do
     accumulate "getstatic java/lang/System/out Ljava/io/PrintStream;"
     increaseStackSizeCurrent
-    evaluate (maxTreeHeight expression)
+    evaluate (setMaxTreeHeight expression)
     accumulate "invokevirtual java/io/PrintStream/println(I)V"
     decreaseStackSizeCurrent
     decreaseStackSizeCurrent
