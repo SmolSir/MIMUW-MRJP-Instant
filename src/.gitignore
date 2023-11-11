@@ -3,7 +3,6 @@
 *.o
 *.x
 *.y
-Test*
 
 # Other files
 insc_llvm

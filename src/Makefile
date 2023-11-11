@@ -4,3 +4,4 @@ all:
 
 clean:
 	rm -f insc_llvm insc_jvm *.hi *.o *.log *.aux *.dvi
+	rm -f Instant/*.hi Instant/*.o
