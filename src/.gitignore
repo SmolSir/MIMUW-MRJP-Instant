@@ -1,0 +1,9 @@
+# BNFC files
+*.hi
+*.o
+*.x
+*.y
+
+# Other files
+insc_llvm
+insc_jvm
